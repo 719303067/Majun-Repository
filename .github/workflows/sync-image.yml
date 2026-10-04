@@ -35,7 +35,7 @@ jobs:
       # 示例2：同步 dockerhub 官方镜像 nginx:latest
       - name: Sync dockerhub nginx
         run: |
-          skopeo copy --all \
+          skopeo copy \
             docker://docker.io/library/nginx:latest \
             docker://${{ secrets.ACR_REGISTRY }}/majun-namespace/majun-repo/nginx:latest
       #########################################################
