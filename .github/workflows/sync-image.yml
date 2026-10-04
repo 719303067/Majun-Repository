@@ -1,0 +1,41 @@
+name: Sync Image to ACR
+run-name: Sync ghcr/dockerhub image to aliyun acr
+on:
+  # 定时任务：UTC时间每天凌晨2点执行（北京时间上午10点）
+  schedule:
+    - cron: '0 2 * * *'
+  # 允许手动点击按钮触发
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install skopeo
+        run: |
+          sudo apt update
+          sudo apt install -y skopeo
+
+      - name: Login to Aliyun ACR
+        env:
+          ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          ACR_USER: ${{ secrets.ACR_USER }}
+          ACR_PWD: ${{ secrets.ACR_PWD }}
+        run: |
+          skopeo login --username=${{ secrets.ACR_USER }} --password=${{ secrets.ACR_PWD }} ${{ secrets.ACR_REGISTRY }}
+
+      ########### 这里配置你要同步的镜像，可添加多条 ###########
+      # 示例1：同步 ghcr.io
+      - name: Sync ghcr.io/home-assistant/home-assistant:latest
+        run: |
+          skopeo copy --all \
+            docker://ghcr.io/home-assistant/home-assistant:latest \
+            docker://${{ secrets.ACR_REGISTRY }}/majun-namespace/majun-repo/majun-repo:latest
+
+      # 示例2：同步 dockerhub 官方镜像 nginx:latest
+      - name: Sync dockerhub nginx
+        run: |
+          skopeo copy --all \
+            docker://docker.io/library/nginx:latest \
+            docker://${{ secrets.ACR_REGISTRY }}/majun-namespace/majun-repo/nginx:latest
+      #########################################################
