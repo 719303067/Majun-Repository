@@ -30,3 +30,10 @@ jobs:
           docker pull docker.io/library/nginx:latest
           docker tag docker.io/library/nginx:latest ${{ secrets.ACR_REGISTRY }}/majun-namespace/nginx:latest
           docker push ${{ secrets.ACR_REGISTRY }}/majun-namespace/nginx:latest
+
+      # 同步 postgres
+      - name: Pull & Push postgres
+        run: |
+          docker pull docker.io/library/postgres:latest
+          docker tag docker.io/library/postgres:latest ${{ secrets.ACR_REGISTRY }}/majun-namespace/postgres:latest
+          docker push ${{ secrets.ACR_REGISTRY }}/majun-namespace/postgres:latest
