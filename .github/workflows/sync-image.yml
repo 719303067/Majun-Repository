@@ -28,7 +28,7 @@ jobs:
       # 示例1：同步 ghcr.io
       - name: Sync ghcr.io/home-assistant/home-assistant:latest
         run: |
-          skopeo copy --all \
+          skopeo copy \
             docker://ghcr.io/home-assistant/home-assistant:latest \
             docker://${{ secrets.ACR_REGISTRY }}/majun-namespace/majun-repo:latest
 
