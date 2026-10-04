@@ -30,7 +30,7 @@ jobs:
         run: |
           skopeo copy --all \
             docker://ghcr.io/home-assistant/home-assistant:latest \
-            docker://${{ secrets.ACR_REGISTRY }}/majun-namespace/majun-repo/home-assistant:latest
+            docker://${{ secrets.ACR_REGISTRY }}/majun-namespace/majun-repo/majun-repo:latest
 
       # 示例2：同步 dockerhub 官方镜像 nginx:latest
       - name: Sync dockerhub nginx
