@@ -1,20 +1,18 @@
-name: Sync Image to ACR
-run-name: Sync ghcr/dockerhub image to aliyun acr
+name: Sync Image to ACR (Auto Latest Tag)
+run-name: Auto fetch tag & sync to ACR
 on:
-  # 定时任务：UTC时间每天凌晨2点执行（北京时间上午10点）
   schedule:
     - cron: '0 2 * * *'
-  # 允许手动点击按钮触发
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Install skopeo
+      - name: Install skopeo & jq
         run: |
           sudo apt update
-          sudo apt install -y skopeo
+          sudo apt install -y skopeo jq
 
       - name: Login to Aliyun ACR
         env:
@@ -22,20 +20,52 @@ jobs:
           ACR_USER: ${{ secrets.ACR_USER }}
           ACR_PWD: ${{ secrets.ACR_PWD }}
         run: |
-          skopeo login --username=${{ secrets.ACR_USER }} --password=${{ secrets.ACR_PWD }} ${{ secrets.ACR_REGISTRY }}
+          echo ${{ secrets.ACR_PWD }} | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USER }} --password-stdin
 
-      ########### 这里配置你要同步的镜像，可添加多条 ###########
-      # 示例1：同步 ghcr.io
-      - name: Sync ghcr.io/home-assistant/home-assistant:latest
+      # ========== 1. home-assistant ghcr.io ==========
+      - name: Get latest tag for home-assistant
+        id: get_ha_tag
         run: |
-          skopeo copy \
-            docker://ghcr.io/home-assistant/home-assistant:latest \
-            docker://${{ secrets.ACR_REGISTRY }}/majun-namespace/home-assistant:latest
+          TAGS=$(skopeo list-tags docker://ghcr.io/home-assistant/home-assistant | jq -r '.Tags | map(select(test("^[0-9]{4}\\.[0-9]+\\.[0-9]+$"))) | sort | last')
+          echo "HA_TAG=$TAGS" >> $GITHUB_OUTPUT
+      - name: Pull & Push home-assistant
+        env:
+          ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          HA_TAG: ${{ steps.get_ha_tag.outputs.HA_TAG }}
+        run: |
+          echo "HomeAssistant 最新版本: $HA_TAG"
+          docker pull ghcr.io/home-assistant/home-assistant:${HA_TAG}
+          docker tag ghcr.io/home-assistant/home-assistant:${HA_TAG} ${ACR_REGISTRY}/homeassistant/home-assistant:${HA_TAG}
+          docker push ${ACR_REGISTRY}/homeassistant/home-assistant:${HA_TAG}
 
-      # 示例2：同步 dockerhub 官方镜像 nginx:latest
-      - name: Sync dockerhub nginx
+      # ========== 2. zigbee2mqtt koenkk ==========
+      - name: Get latest tag for zigbee2mqtt
+        id: get_zigbee_tag
         run: |
-          skopeo copy \
-            docker://docker.io/library/nginx:latest \
-            docker://${{ secrets.ACR_REGISTRY }}/majun-namespace//nginx1:latest
-      #########################################################
+          TAGS=$(skopeo list-tags docker://koenkk/zigbee2mqtt | jq -r '.Tags | map(select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))) | sort | last')
+          echo "ZIGBEE_TAG=$TAGS" >> $GITHUB_OUTPUT
+      - name: Pull & Push zigbee2mqtt
+        env:
+          ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          ZIGBEE_TAG: ${{ steps.get_zigbee_tag.outputs.ZIGBEE_TAG }}
+        run: |
+          echo "Zigbee2MQTT 最新版本: $ZIGBEE_TAG"
+          docker pull koenkk/zigbee2mqtt:${ZIGBEE_TAG}
+          docker tag koenkk/zigbee2mqtt:${ZIGBEE_TAG} ${ACR_REGISTRY}/homeassistant/zigbee2mqtt:${ZIGBEE_TAG}
+          docker push ${ACR_REGISTRY}/homeassistant/zigbee2mqtt:${ZIGBEE_TAG}
+
+      # ==========3. eclipse-mosquitto ==========
+      - name: Get latest tag for eclipse-mosquitto
+        id: get_mosq_tag
+        run: |
+          TAGS=$(skopeo list-tags docker://docker.io/eclipse-mosquitto | jq -r '.Tags | map(select(test("^[0-9]+\\.[0-9]+$"))) | sort | last')
+          echo "MOSQ_TAG=$TAGS" >> $GITHUB_OUTPUT
+      - name: Pull & Push eclipse-mosquitto
+        env:
+          ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          MOSQ_TAG: ${{ steps.get_mosq_tag.outputs.MOSQ_TAG }}
+        run: |
+          echo "Mosquitto 最新版本: $MOSQ_TAG"
+          docker pull docker.io/eclipse-mosquitto:${MOSQ_TAG}
+          docker tag docker.io/eclipse-mosquitto:${MOSQ_TAG} ${ACR_REGISTRY}/homeassistant/mosquitto:${MOSQ_TAG}
+          docker push ${ACR_REGISTRY}/homeassistant/mosquitto:${MOSQ_TAG}
