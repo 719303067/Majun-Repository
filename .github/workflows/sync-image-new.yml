@@ -35,8 +35,8 @@ jobs:
         run: |
           echo "HomeAssistant 最新版本: $HA_TAG"
           docker pull ghcr.io/home-assistant/home-assistant:${HA_TAG}
-          docker tag ghcr.io/home-assistant/home-assistant:${HA_TAG} ${ACR_REGISTRY}/homeassistant/home-assistant:${HA_TAG}
-          docker push ${ACR_REGISTRY}/homeassistant/home-assistant:${HA_TAG}
+          docker tag ghcr.io/home-assistant/home-assistant:${HA_TAG} ${ACR_REGISTRY}/majun-namespace/home-assistant:${HA_TAG}
+          docker push ${ACR_REGISTRY}/majun-namespace/home-assistant:${HA_TAG}
 
       # ========== 2. zigbee2mqtt koenkk ==========
       - name: Get latest tag for zigbee2mqtt
@@ -51,8 +51,8 @@ jobs:
         run: |
           echo "Zigbee2MQTT 最新版本: $ZIGBEE_TAG"
           docker pull koenkk/zigbee2mqtt:${ZIGBEE_TAG}
-          docker tag koenkk/zigbee2mqtt:${ZIGBEE_TAG} ${ACR_REGISTRY}/homeassistant/zigbee2mqtt:${ZIGBEE_TAG}
-          docker push ${ACR_REGISTRY}/homeassistant/zigbee2mqtt:${ZIGBEE_TAG}
+          docker tag koenkk/zigbee2mqtt:${ZIGBEE_TAG} ${ACR_REGISTRY}/majun-namespace/zigbee2mqtt:${ZIGBEE_TAG}
+          docker push ${ACR_REGISTRY}/majun-namespace/zigbee2mqtt:${ZIGBEE_TAG}
 
       # ==========3. eclipse-mosquitto ==========
       - name: Get latest tag for eclipse-mosquitto
@@ -67,5 +67,5 @@ jobs:
         run: |
           echo "Mosquitto 最新版本: $MOSQ_TAG"
           docker pull docker.io/eclipse-mosquitto:${MOSQ_TAG}
-          docker tag docker.io/eclipse-mosquitto:${MOSQ_TAG} ${ACR_REGISTRY}/homeassistant/mosquitto:${MOSQ_TAG}
-          docker push ${ACR_REGISTRY}/homeassistant/mosquitto:${MOSQ_TAG}
+          docker tag docker.io/eclipse-mosquitto:${MOSQ_TAG} ${ACR_REGISTRY}/majun-namespace/mosquitto:${MOSQ_TAG}
+          docker push ${ACR_REGISTRY}/majun-namespace/mosquitto:${MOSQ_TAG}
