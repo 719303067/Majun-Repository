@@ -17,23 +17,16 @@ jobs:
         run: |
           echo ${{ secrets.ACR_PWD }} | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USER }} --password-stdin
 
-      # 同步 home-assistant
-      - name: Pull & Push home-assistant
+      # 同步 php:7.4-apache
+      - name: Pull & Push php:7.4-apache
         run: |
-          docker pull ghcr.io/home-assistant/home-assistant:latest
-          docker tag ghcr.io/home-assistant/home-assistant:latest ${{ secrets.ACR_REGISTRY }}/majun-namespace/majun-repo:latest
-          docker push ${{ secrets.ACR_REGISTRY }}/majun-namespace/majun-repo:latest
+          docker pull docker.io/library/php:7.4-apache
+          docker tag docker.io/library/php:7.4-apache ${{ secrets.ACR_REGISTRY }}/majun-namespace/php:7.4-apache
+          docker push ${{ secrets.ACR_REGISTRY }}/majun-namespace/php:7.4-apache
 
-      # 同步 nginx
-      - name: Pull & Push nginx
+      # 同步 mysql:5.7
+      - name: Pull & Push mysql:5.7
         run: |
-          docker pull docker.io/library/nginx:latest
-          docker tag docker.io/library/nginx:latest ${{ secrets.ACR_REGISTRY }}/majun-namespace/nginx:latest
-          docker push ${{ secrets.ACR_REGISTRY }}/majun-namespace/nginx:latest
-
-      # 同步 postgres
-      - name: Pull & Push postgres
-        run: |
-          docker pull docker.io/library/postgres:latest
-          docker tag docker.io/library/postgres:latest ${{ secrets.ACR_REGISTRY }}/majun-namespace/postgres:latest
-          docker push ${{ secrets.ACR_REGISTRY }}/majun-namespace/postgres:latest
+          docker pull docker.io/library/mysql:5.7
+          docker tag docker.io/library/mysql:5.7 ${{ secrets.ACR_REGISTRY }}/majun-namespace/mysql:5.7
+          docker push ${{ secrets.ACR_REGISTRY }}/majun-namespace/mysql:5.7
